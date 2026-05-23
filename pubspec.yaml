@@ -1,0 +1,31 @@
+name: communicare
+description: "CommuniCare - an autism communication support app for children."
+publish_to: 'none'
+version: 0.2.0+2
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  flutter_tts: ^4.2.0          # offline text-to-speech (device voices)
+  image_picker: ^1.1.2         # photo for a custom card (camera or gallery)
+  supabase_flutter: ^2.5.6     # parent auth + Postgres + Storage
+  google_sign_in: ^6.2.1       # native Google sign-in token for Supabase
+  flutter_dotenv: ^5.1.0       # load SUPABASE_URL / ANON_KEY from .env
+  # Local cache. shared_preferences is already pulled in transitively by
+  # supabase_flutter so this declaration triggers no extra download.
+  # UUIDs are generated from Random.secure() in lib/data/ids.dart — no
+  # `uuid` package required.
+  shared_preferences: ^2.3.2
+  crypto: ^3.0.5               # sha256 hash of link codes before they leave the device
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
