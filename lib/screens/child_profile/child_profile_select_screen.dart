@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../state/app_state.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/primary_button.dart';
 import 'child_profile_setup_screen.dart';
 
-/// "Which child is using the app today?" — shown after sign-in when the
-/// parent has more than one profile and none is currently active.
 class ChildProfileSelectScreen extends StatelessWidget {
   const ChildProfileSelectScreen({super.key});
 
@@ -15,8 +12,8 @@ class ChildProfileSelectScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (_) =>
-              const ChildProfileSetupScreen(showLinkCodeOnSave: false)),
+        builder: (_) => const ChildProfileSetupScreen(showLinkCodeOnSave: false),
+      ),
     );
   }
 
@@ -26,64 +23,144 @@ class ChildProfileSelectScreen extends StatelessWidget {
       listenable: appState,
       builder: (context, _) {
         final children = appState.children;
+
         return Scaffold(
-          backgroundColor: AppColors.tealBg,
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Who's using the app?",
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF04342C))),
-                  const SizedBox(height: 6),
-                  const Text(
-                    "Pick a child profile to continue.",
-                    style: TextStyle(color: AppColors.muted, height: 1.4),
+          backgroundColor: const Color(0xFFF8FAFA),
+          body: Stack(
+            children: [
+              // Calming Background Shapes
+              Positioned(
+                top: 80,
+                left: 10,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF84D7FD).withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 24),
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 14,
-                        mainAxisSpacing: 14,
-                        childAspectRatio: 0.95,
-                      ),
-                      itemCount: children.length + 1,
-                      itemBuilder: (_, i) {
-                        if (i == children.length) {
-                          return _AddTile(onTap: () => _add(context));
-                        }
-                        final c = children[i];
-                        return _ProfileTile(
-                          name: c.name,
-                          avatarPath: c.avatarPath,
-                          age: c.age,
-                          onTap: () => appState.setActiveChild(c),
-                        );
-                      },
-                    ),
-                  ),
-                  if (children.isNotEmpty)
-                    PrimaryButton(
-                      label: appState.activeChild == null
-                          ? 'Tap a profile above'
-                          : 'Continue as ${appState.activeChild!.name}',
-                      onPressed: appState.activeChild == null
-                          ? null
-                          : () {
-                              // AuthGate is listening and will swap to HomeShell
-                              // on the next build now that activeChild != null.
-                            },
-                    ),
-                ],
+                ),
               ),
-            ),
+              Positioned(
+                bottom: 150,
+                right: 10,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB4A835).withOpacity(0.05),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+
+              SafeArea(
+                child: Column(
+                  children: [
+                    // Top App Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(width: 48), // Spacer for symmetry
+                          const Text(
+                            'CommuniCare',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF006A63),
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFECEEEE),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.settings, color: Color(0xFF3D4947), size: 28),
+                              onPressed: () {},
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Expanded(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Welcome Prompt
+                              const Text(
+                                'Hello!',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF191C1D),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Who is using the app today?',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Color(0xFF3D4947),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 48),
+
+                              // Profiles Grid
+                              Wrap(
+                                spacing: 40,
+                                runSpacing: 40,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  for (final child in children)
+                                    _ProfileButton(
+                                      name: child.name,
+                                      avatarPath: child.avatarPath,
+                                      onTap: () => appState.setActiveChild(child),
+                                      isActive: appState.activeChild?.id == child.id,
+                                    ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 64),
+
+                              // Add Profile Button
+                              OutlinedButton.icon(
+                                onPressed: () => _add(context),
+                                icon: const Icon(Icons.add_circle, color: Color(0xFF3D4947)),
+                                label: const Text(
+                                  'Add New Profile',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF3D4947),
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  side: const BorderSide(color: Color(0xFFBDC9C6), width: 2),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -91,100 +168,88 @@ class ChildProfileSelectScreen extends StatelessWidget {
   }
 }
 
-class _ProfileTile extends StatelessWidget {
+class _ProfileButton extends StatelessWidget {
   final String name;
   final String? avatarPath;
-  final int? age;
+  final bool isActive;
   final VoidCallback onTap;
-  const _ProfileTile({
+
+  const _ProfileButton({
     required this.name,
-    required this.avatarPath,
-    required this.age,
+    this.avatarPath,
+    required this.isActive,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final active = appState.activeChild?.name == name;
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: active ? AppColors.teal : AppColors.line,
-              width: active ? 2 : 1,
-            ),
-          ),
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+    final bool isIconAvatar = avatarPath != null && avatarPath!.startsWith('icon:');
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
             children: [
               Container(
-                width: 72,
-                height: 72,
+                width: 160,
+                height: 160,
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.tealLight,
-                  borderRadius: BorderRadius.circular(50),
+                  color: isActive ? const Color(0xFF006A63).withOpacity(0.1) : Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: avatarPath != null
-                    ? Image.file(File(avatarPath!), fit: BoxFit.cover)
-                    : const Icon(Icons.child_care,
-                        size: 40, color: AppColors.tealDark),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: avatarPath != null && !isIconAvatar
+                      ? Image.file(File(avatarPath!), fit: BoxFit.cover)
+                      : Center(
+                          child: Icon(
+                            Icons.child_care,
+                            size: 80,
+                            color: isActive ? const Color(0xFF006A63) : const Color(0xFFBDC9C6),
+                          ),
+                        ),
+                ),
               ),
-              const SizedBox(height: 10),
-              Text(name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w600)),
-              if (age != null)
-                Text('age $age',
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.muted)),
+              if (isActive)
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF006A63),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check, color: Colors.white, size: 32),
+                  ),
+                ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AddTile extends StatelessWidget {
-  final VoidCallback onTap;
-  const _AddTile({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.tealLight,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border:
-                Border.all(color: AppColors.tealMid, width: 1.4),
+          const SizedBox(height: 16),
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: isActive ? const Color(0xFF006A63) : const Color(0xFF191C1D),
+            ),
           ),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add, size: 36, color: AppColors.tealDark),
-              SizedBox(height: 8),
-              Text('Add a child',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.tealDark)),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
